@@ -72,32 +72,127 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+
+
+
+
+
+
 def depthFirstSearch(problem: SearchProblem):
     """
     Search the deepest nodes in the search tree first.
 
     Your search algorithm needs to return a list of actions that reaches the
     goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Stack
+    
+    # Initialize the fringe as a Stack for LIFO behavior (Depth-First)
+    fringe = Stack()
+    
+    # The fringe stores tuples of (current_state, path_to_this_state)
+    fringe.push((problem.getStartState(), []))
+    
+    # Keep track of expanded states to avoid infinite loops in cyclic graphs
+    visited = set()
+    
+    while not fringe.isEmpty():
+        current_state, actions = fringe.pop()
+        
+        # If we reached the goal, return the accumulated list of actions
+        if problem.isGoalState(current_state):
+            return actions
+            
+        # Only expand the state if it hasn't been expanded yet
+        if current_state not in visited:
+            visited.add(current_state)
+            
+            # getSuccessors returns a list of tuples: (successor, action, stepCost)
+            for successor, action, stepCost in problem.getSuccessors(current_state):
+                # Push the successor and the updated path to the fringe
+                fringe.push((successor, actions + [action]))
+                
+    return []
+
+
+
+
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Queue
+    
+    # Initialize the fringe as a Queue for FIFO behavior (Breadth-First)
+    fringe = Queue()
+    
+    # The fringe stores tuples of (current_state, path_to_this_state)
+    fringe.push((problem.getStartState(), []))
+    
+    # Keep track of expanded states to avoid infinite loops
+    visited = set()
+    
+    while not fringe.isEmpty():
+        current_state, actions = fringe.pop()
+        
+        # If we reached the goal, return the accumulated list of actions
+        if problem.isGoalState(current_state):
+            return actions
+            
+        # Only expand the state if it hasn't been expanded yet
+        if current_state not in visited:
+            visited.add(current_state)
+            
+            # getSuccessors returns a list of tuples: (successor, action, stepCost)
+            for successor, action, stepCost in problem.getSuccessors(current_state):
+                # Push the successor and the updated path to the fringe
+                fringe.push((successor, actions + [action]))
+                
+    return []
+
+
+
+
+
+
+
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
+    
+    # Initialize the fringe as a PriorityQueue
+    fringe = PriorityQueue()
+    
+    # The fringe stores tuples of (current_state, path_to_this_state, total_cost)
+    # Start state has a cost of 0. We push the tuple, and the priority is also 0.
+    fringe.push((problem.getStartState(), [], 0), 0)
+    
+    # visited set tracks expanded states
+    visited = set()
+    
+    while not fringe.isEmpty():
+        # Pop the state with the lowest total cost
+        current_state, actions, current_cost = fringe.pop()
+        
+        if problem.isGoalState(current_state):
+            return actions
+            
+        if current_state not in visited:
+            visited.add(current_state)
+            
+            # getSuccessors returns (successor, action, stepCost)
+            for successor, action, stepCost in problem.getSuccessors(current_state):
+                # Calculate the new total cost to reach the successor
+                new_cost = current_cost + stepCost
+                # Push the successor to the fringe with the new_cost as its priority
+                fringe.push((successor, actions + [action], new_cost), new_cost)
+                
+    return []
+
+
+
+
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -106,10 +201,51 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
+
+
+
+
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
+    
+    # Initialize the fringe as a PriorityQueue
+    fringe = PriorityQueue()
+    
+    start_state = problem.getStartState()
+    
+    # The fringe stores tuples of (current_state, path_to_this_state, g_cost)
+    # The priority is f(n) = g_cost + heuristic_cost
+    start_priority = 0 + heuristic(start_state, problem)
+    fringe.push((start_state, [], 0), start_priority)
+    
+    visited = set()
+    
+    while not fringe.isEmpty():
+        current_state, actions, current_cost = fringe.pop()
+        
+        if problem.isGoalState(current_state):
+            return actions
+            
+        if current_state not in visited:
+            visited.add(current_state)
+            
+            # getSuccessors returns (successor, action, stepCost)
+            for successor, action, stepCost in problem.getSuccessors(current_state):
+                new_cost = current_cost + stepCost
+                # Calculate f(n) = g(n) + h(n)
+                f_cost = new_cost + heuristic(successor, problem)
+                
+                # Push with the combined f_cost as the priority
+                fringe.push((successor, actions + [action], new_cost), f_cost)
+                
+    return []
+
+
+
+
+
 
 
 # Abbreviations
