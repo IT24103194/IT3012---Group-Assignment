@@ -473,37 +473,61 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
+
+
+
+        
+
 def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     Your heuristic for the FoodSearchProblem goes here.
-
-    This heuristic must be consistent to ensure correctness.  First, try to come
-    up with an admissible heuristic; almost all admissible heuristics will be
-    consistent as well.
-
-    If using A* ever finds a solution that is worse uniform cost search finds,
-    your heuristic is *not* consistent, and probably not admissible!  On the
-    other hand, inadmissible or inconsistent heuristics may find optimal
-    solutions, so be careful.
-
-    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
-    (see game.py) of either True or False. You can call foodGrid.asList() to get
-    a list of food coordinates instead.
-
-    If you want access to info like walls, capsules, etc., you can query the
-    problem.  For example, problem.walls gives you a Grid of where the walls
-    are.
-
-    If you want to *store* information to be reused in other calls to the
-    heuristic, there is a dictionary called problem.heuristicInfo that you can
-    use. For example, if you only want to count the walls once and store that
-    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
-    Subsequent calls to this heuristic can access
-    problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    food_list = foodGrid.asList()
+    
+    # If all food is eaten, the remaining cost is 0
+    if not food_list:
+        return 0
+
+    # Initialize a cache dictionary in the problem state to prevent timeout
+    if 'dist_cache' not in problem.heuristicInfo:
+        problem.heuristicInfo['dist_cache'] = {}
+
+    def get_maze_dist(p1, p2):
+        # Sort the points so (p1, p2) and (p2, p1) use the same cache key
+        key = tuple(sorted((p1, p2)))
+        if key not in problem.heuristicInfo['dist_cache']:
+            problem.heuristicInfo['dist_cache'][key] = mazeDistance(p1, p2, problem.startingGameState)
+        return problem.heuristicInfo['dist_cache'][key]
+
+    # If there is only one dot left, the true cost is just the maze distance to it
+    if len(food_list) == 1:
+        return get_maze_dist(position, food_list[0])
+
+    max_pair_dist = 0
+    furthest_pair = (None, None)
+
+    # Find the two food dots that are furthest apart from each other in the maze
+    for i in range(len(food_list)):
+        for j in range(i + 1, len(food_list)):
+            dist = get_maze_dist(food_list[i], food_list[j])
+            if dist > max_pair_dist:
+                max_pair_dist = dist
+                furthest_pair = (food_list[i], food_list[j])
+
+    # Pac-Man must travel to one of these two furthest dots, and then travel between them.
+    # To remain mathematically admissible, we assume he paths to the closer one first.
+    f1, f2 = furthest_pair
+    min_dist_to_pair = min(get_maze_dist(position, f1), get_maze_dist(position, f2))
+
+    return max_pair_dist + min_dist_to_pair
+
+
+
+
+
+
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
