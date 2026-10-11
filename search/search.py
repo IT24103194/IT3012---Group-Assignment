@@ -78,16 +78,35 @@ def depthFirstSearch(problem: SearchProblem):
 
     Your search algorithm needs to return a list of actions that reaches the
     goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Stack
+    
+    # Initialize the fringe as a Stack for LIFO behavior (Depth-First)
+    fringe = Stack()
+    
+    # The fringe stores tuples of (current_state, path_to_this_state)
+    fringe.push((problem.getStartState(), []))
+    
+    # Keep track of expanded states to avoid infinite loops in cyclic graphs
+    visited = set()
+    
+    while not fringe.isEmpty():
+        current_state, actions = fringe.pop()
+        
+        # If we reached the goal, return the accumulated list of actions
+        if problem.isGoalState(current_state):
+            return actions
+            
+        # Only expand the state if it hasn't been expanded yet
+        if current_state not in visited:
+            visited.add(current_state)
+            
+            # getSuccessors returns a list of tuples: (successor, action, stepCost)
+            for successor, action, stepCost in problem.getSuccessors(current_state):
+                # Push the successor and the updated path to the fringe
+                fringe.push((successor, actions + [action]))
+                
+    return []
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
