@@ -72,6 +72,12 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+
+
+
+
+
+
 def depthFirstSearch(problem: SearchProblem):
     """
     Search the deepest nodes in the search tree first.
@@ -108,10 +114,47 @@ def depthFirstSearch(problem: SearchProblem):
                 
     return []
 
+
+
+
+
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Queue
+    
+    # Initialize the fringe as a Queue for FIFO behavior (Breadth-First)
+    fringe = Queue()
+    
+    # The fringe stores tuples of (current_state, path_to_this_state)
+    fringe.push((problem.getStartState(), []))
+    
+    # Keep track of expanded states to avoid infinite loops
+    visited = set()
+    
+    while not fringe.isEmpty():
+        current_state, actions = fringe.pop()
+        
+        # If we reached the goal, return the accumulated list of actions
+        if problem.isGoalState(current_state):
+            return actions
+            
+        # Only expand the state if it hasn't been expanded yet
+        if current_state not in visited:
+            visited.add(current_state)
+            
+            # getSuccessors returns a list of tuples: (successor, action, stepCost)
+            for successor, action, stepCost in problem.getSuccessors(current_state):
+                # Push the successor and the updated path to the fringe
+                fringe.push((successor, actions + [action]))
+                
+    return []
+
+
+
+
+
+
+
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
