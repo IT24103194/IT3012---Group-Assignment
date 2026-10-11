@@ -293,7 +293,7 @@ class CornersProblem(search.SearchProblem):
 
 
 
-        
+
 
     def getStartState(self):
         """
@@ -363,24 +363,53 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 
+
+
+
+
 def cornersHeuristic(state: Any, problem: CornersProblem):
     """
     A heuristic for the CornersProblem that you defined.
-
-      state:   The current search state
-               (a data structure you chose in your search problem)
-
-      problem: The CornersProblem instance for this layout.
-
-    This function should always return a number that is a lower bound on the
-    shortest path from the state to a goal of the problem; i.e.  it should be
-    admissible (as well as consistent).
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    current_pos = state[0]
+    visited_corners = state[1]
+    
+    unvisited = []
+    
+    # Identify which corners have not been visited yet
+    for i in range(4):
+        if not visited_corners[i]:
+            unvisited.append(corners[i])
+            
+    # If all corners are visited, the remaining cost is 0 (required for admissibility)
+    if not unvisited:
+        return 0
+        
+    import itertools
+    min_cost = float('inf')
+    
+    # Calculate the Manhattan distance of all possible paths through the remaining corners
+    for path in itertools.permutations(unvisited):
+        cost = 0
+        current = current_pos
+        for next_corner in path:
+            # Manhattan distance formula: |x1 - x2| + |y1 - y2|
+            cost += abs(current[0] - next_corner[0]) + abs(current[1] - next_corner[1])
+            current = next_corner
+            
+        if cost < min_cost:
+            min_cost = cost
+            
+    return min_cost
+
+
+
+
+
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
